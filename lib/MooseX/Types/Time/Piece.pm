@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use Carp 'confess';
 use Time::Piece ();
@@ -23,7 +23,8 @@ subtype Duration, as 'Time::Seconds';
 my $DEFAULT_FORMAT = '%a, %d %b %Y %H:%M:%S %Z';
 my $ISO_FORMAT = '%Y-%m-%dT%H:%M:%S';
 
-for my $type ('Time::Piece', Time) {
+for my $type ( 'Time::Piece', Time )
+{
     coerce $type,
         from Int, via
         {
@@ -35,13 +36,15 @@ for my $type ('Time::Piece', Time) {
             try
               { $time = Time::Piece->strptime($time, $ISO_FORMAT) }
             catch
-              { confess "String '$time' is not in ISO 8601 format ($ISO_FORMAT)" };
+              # error message from strptime on its own is inadequate
+              { confess "Error parsing time '$time' with format '$ISO_FORMAT'" };
             $time;
         },
         from ArrayRef, via
         {
             my ( $time, $format ) = @$_;
-            $format ||= $DEFAULT_FORMAT;
+            $format ||= $DEFAULT_FORMAT; # if only 1 arg
+            ( defined $time ) || confess "Time is undefined";
             try
               { $time = Time::Piece->strptime(@$_) }
             catch
@@ -50,7 +53,8 @@ for my $type ('Time::Piece', Time) {
         };
 }
 
-for my $type ('Time::Seconds', Duration) {
+for my $type ( 'Time::Seconds', Duration )
+{
     coerce $type,
         from Int, via { Time::Seconds->new($_) };
 }
@@ -110,7 +114,8 @@ A class type for L<Time::Piece>.
 
 =item coerce from C<Int>
 
-The Int value is interpreted as epoch seconds as provided by the L<time() function|perlfunc/time>.
+The Int value is interpreted as epoch seconds as provided by the
+L<time() function|perlfunc/time>.
 
 =item coerce from C<Str>
 
@@ -119,11 +124,13 @@ See also L<Time::Piece/YYYY-MM-DDThh:mm:ss>.
 
 =item coerce from C<ArrayRef>
 
-The ArrayRef should contain the values accepted by L<strptime()|Time::Piece/"Date Parsing">.
+The ArrayRef should contain a time string and a format string as accepted by
+L<strptime()|Time::Piece/"Date Parsing">.
 
 =back
 
-An exception is thrown if the date/time or format is invalid.
+An exception is thrown if the time does not match the format, or
+the time or format is invalid.
 
 =item Duration
 

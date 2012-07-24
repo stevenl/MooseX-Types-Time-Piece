@@ -58,8 +58,11 @@ package Foo::Declared;
 
 package main;
 
-use Test::More;
+use Test::More tests => 79;
+use Test::NoWarnings;
 use Test::Fatal;
+use Test::Warn;
+
 use Time::Local 'timelocal';
 use Time::Piece;
 use Time::Seconds;
@@ -92,17 +95,17 @@ for my $class ('Foo', 'Foo::Declared') {
     ok( $f->time_from_str->datetime eq '2012-12-31T00:00:00' );
 
     # garbage at end of string
-    $f->time_from_str('2012-12-31 23:59:59');
+    warning_like { $f->time_from_str('2012-12-31 23:59:59') } qr/^garbage at end of string/;
     ok( $f->time_from_str->isa('Time::Piece') );
     ok( $f->time_from_str->datetime eq '2012-12-31T00:00:00' );
 
-    $f->time_from_str('2012-12-31T23:59:59.123');
+    warning_like { $f->time_from_str('2012-12-31T23:59:59.123') } qr/^garbage at end of string/;
     ok( $f->time_from_str->isa('Time::Piece') );
     ok( $f->time_from_str->datetime eq '2012-12-31T23:59:59' );
 
-    like( exception { $f->time_from_str('apocalypse') },          qr/not in ISO 8601 format/ );
-    like( exception { $f->time_from_str('2012-13-01T23:59:59') }, qr/not in ISO 8601 format/ );
-    like( exception { $f->time_from_str('2012-12-31T24:59:59') }, qr/not in ISO 8601 format/ );
+    like( exception { $f->time_from_str('apocalypse') },          qr/^Error parsing time/ );
+    like( exception { $f->time_from_str('2012-13-01T23:59:59') }, qr/^Error parsing time/ );
+    like( exception { $f->time_from_str('2012-12-31T24:59:59') }, qr/^Error parsing time/ );
 
     # -----------------------
     # coerce from ArrayRef
@@ -119,14 +122,15 @@ for my $class ('Foo', 'Foo::Declared') {
     ok( $f->time_from_arrayref->datetime eq '1970-01-01T23:59:59' );
 
     # ArrayRef with no args
-    $f->time_from_arrayref( [ ] );
-    ok( $f->time_from_arrayref->isa('Time::Piece') );
-    ok( $f->time_from_arrayref->datetime eq '1970-01-01T00:00:00' );
+    like( exception { $f->time_from_arrayref( [ ] ) }, qr/^Time is undefined/ );
 
     # ArrayRef with single arg
     $f->time_from_arrayref( ['Tue, 31 Dec 2012 23:59:59'] );
     ok( $f->time_from_arrayref->isa('Time::Piece') );
     ok( $f->time_from_arrayref->datetime eq '2012-12-31T23:59:59' );
+
+    # ArrayRef with no args
+    like( exception { $f->time_from_arrayref( [ ] ) }, qr/^Time is undefined/ );
 
     like( exception { $f->time_from_arrayref( ['Tue 31 Dec 2012 23:59:59'] ) }, qr/^Error parsing time '.+' with format '.+'/ );
 
@@ -150,5 +154,3 @@ for my $class ('Foo', 'Foo::Declared') {
     ok( $f->duration->isa('Time::Seconds') );
     ok( $f->duration->seconds == -1 );
 }
-
-done_testing();

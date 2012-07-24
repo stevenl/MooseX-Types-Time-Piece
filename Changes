@@ -1,5 +1,8 @@
 Revision history for MooseX-Types-Time-Piece
 
+0.02    2012-07-25
+        Catch warnings caused by tests
+
 0.01    2012-07-24
         First version.
 
