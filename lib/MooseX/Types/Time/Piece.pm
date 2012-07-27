@@ -4,9 +4,9 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
-use Carp 'confess';
+use Carp ();
 use Time::Piece ();
 use Time::Seconds ();
 use Try::Tiny;
@@ -33,23 +33,24 @@ for my $type ( 'Time::Piece', Time )
         from Str, via
         {
             my $time = $_;
-            try
-              { $time = Time::Piece->strptime($time, $ISO_FORMAT) }
-            catch
-              # error message from strptime on its own is inadequate
-              { confess "Error parsing time '$time' with format '$ISO_FORMAT'" };
-            $time;
+            return try {
+                Time::Piece->strptime( $time, $ISO_FORMAT );
+            } catch {
+                # error message from strptime on its own is inadequate
+                Carp::confess "Error parsing time '$time' with format '$ISO_FORMAT'";
+            };
         },
         from ArrayRef, via
         {
             my ( $time, $format ) = @$_;
             $format ||= $DEFAULT_FORMAT; # if only 1 arg
-            ( defined $time ) || confess "Time is undefined";
-            try
-              { $time = Time::Piece->strptime(@$_) }
-            catch
-              { confess "Error parsing time '$time' with format '$format'" };
-            $time;
+            ( defined $time ) || Carp::confess "Time is undefined";
+
+            return try {
+                Time::Piece->strptime(@$_);
+            } catch {
+                Carp::confess "Error parsing time '$time' with format '$format'";
+            };
         };
 }
 
