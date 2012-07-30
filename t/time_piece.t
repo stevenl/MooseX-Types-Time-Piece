@@ -78,7 +78,7 @@ for my $class ('Foo', 'Foo::Declared') {
 
     $f->time_from_int(-1);
     isa_ok( $f->time_from_int, 'Time::Piece' );
-    is( $f->time_from_int->datetime, '1970-01-01T07:59:59' );
+    is( $f->time_from_int->datetime, localtime(-1)->datetime );
 
     $f->time_from_int(2**33);
     isa_ok( $f->time_from_int, 'Time::Piece' );
@@ -90,18 +90,22 @@ for my $class ('Foo', 'Foo::Declared') {
     isa_ok( $f->time_from_str, 'Time::Piece' );
     is( $f->time_from_str->datetime, '2012-12-31T23:59:59' );
 
-    $f->time_from_str('2012-12-31');
-    isa_ok( $f->time_from_str, 'Time::Piece' );
-    is( $f->time_from_str->datetime, '2012-12-31T00:00:00' );
+    SKIP: {
+        skip "Time::Piece 1.20 not installed", 8 if $Time::Piece::VERSION lt '1.20';
 
-    # garbage at end of string
-    warning_like { $f->time_from_str('2012-12-31 23:59:59') } qr/^garbage at end of string/;
-    isa_ok( $f->time_from_str, 'Time::Piece' );
-    is( $f->time_from_str->datetime, '2012-12-31T00:00:00' );
+        $f->time_from_str('2012-12-31');
+        isa_ok( $f->time_from_str, 'Time::Piece' );
+        is( $f->time_from_str->datetime, '2012-12-31T00:00:00' );
 
-    warning_like { $f->time_from_str('2012-12-31T23:59:59.123') } qr/^garbage at end of string/;
-    isa_ok( $f->time_from_str, 'Time::Piece' );
-    is( $f->time_from_str->datetime, '2012-12-31T23:59:59' );
+        # garbage at end of string
+        warning_like { $f->time_from_str('2012-12-31 23:59:59') } qr/^garbage at end of string/;
+        isa_ok( $f->time_from_str, 'Time::Piece' );
+        is( $f->time_from_str->datetime, '2012-12-31T00:00:00' );
+
+        warning_like { $f->time_from_str('2012-12-31T23:59:59.123') } qr/^garbage at end of string/;
+        isa_ok( $f->time_from_str, 'Time::Piece' );
+        is( $f->time_from_str->datetime, '2012-12-31T23:59:59' );
+    }
 
     like( exception { $f->time_from_str('apocalypse') },          qr/^Error parsing time/ );
     like( exception { $f->time_from_str('2012-13-01T23:59:59') }, qr/^Error parsing time/ );
@@ -132,18 +136,35 @@ for my $class ('Foo', 'Foo::Declared') {
     # ArrayRef with no args
     like( exception { $f->time_from_arrayref( [ ] ) }, qr/^Time is undefined/ );
 
-    like( exception { $f->time_from_arrayref( ['Tue 31 Dec 2012 23:59:59'] ) }, qr/^Error parsing time '.+' with format '.+'/ );
+    like(
+        exception { $f->time_from_arrayref( ['Tue 31 Dec 2012 23:59:59'] ) },
+        qr/^Error parsing time '.+' with format '.+'/
+    );
 
     # ArrayRef with extra args (ignored)
-    $f->time_from_arrayref( ['2012-12-31 23:59:59', '%Y-%m-%d %H:%M:%S', 'these args', 'should be ignored'] );
+    $f->time_from_arrayref(
+        ['2012-12-31 23:59:59', '%Y-%m-%d %H:%M:%S', 'these args', 'should be ignored']
+    );
     isa_ok( $f->time_from_arrayref, 'Time::Piece' );
     is( $f->time_from_arrayref->datetime, '2012-12-31T23:59:59' );
 
     # invalid arg format
-    like( exception { $f->time_from_arrayref( ['2012-12-31T23:59:59', '%Y-%m-%d %H:%M:%S'] ) }, qr/^Error parsing time '.+' with format '.+'/ );
-    like( exception { $f->time_from_arrayref( ['%Y-%m-%d %H:%M:%S', '2012-12-31 23:59:59'] ) }, qr/^Error parsing time '.+' with format '.+'/ );
-    like( exception { $f->time_from_arrayref( [31, 12, 2012] ) }, qr/^Error parsing time '.+' with format '.+'/ );
-    like( exception { $f->time_from_arrayref( ['2012-13-31 23:59:59', '%Y-%m-%d %H:%M:%S'] ) }, qr/^Error parsing time '.+' with format '.+'/ );
+    like(
+        exception { $f->time_from_arrayref( ['2012-12-31T23:59:59', '%Y-%m-%d %H:%M:%S'] ) },
+        qr/^Error parsing time '.+' with format '.+'/
+    );
+    like(
+        exception { $f->time_from_arrayref( ['%Y-%m-%d %H:%M:%S', '2012-12-31 23:59:59'] ) },
+        qr/^Error parsing time '.+' with format '.+'/
+    );
+    like(
+        exception { $f->time_from_arrayref( [31, 12, 2012] ) },
+        qr/^Error parsing time '.+' with format '.+'/
+    );
+    like(
+        exception { $f->time_from_arrayref( ['2012-13-31 23:59:59', '%Y-%m-%d %H:%M:%S'] ) },
+        qr/^Error parsing time '.+' with format '.+'/
+    );
 
     # Duration
     $f->duration( Time::Seconds::ONE_DAY * 2.5 );
