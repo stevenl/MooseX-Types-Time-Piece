@@ -15,6 +15,7 @@ my $builder = Module::Build->new(
         'Test::More' => 0,
         'Test::Fatal' => 0,
         'Test::NoWarnings' => 0,
+        'Test::Warn' => 0,
     },
     requires => {
         'perl' => 5.006,
