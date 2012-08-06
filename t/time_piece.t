@@ -117,13 +117,19 @@ for my $class ('Foo', 'Foo::Declared') {
     isa_ok( $f->time_from_arrayref, 'Time::Piece' );
     is( $f->time_from_arrayref->datetime, '2012-12-31T23:59:59' );
 
-    $f->time_from_arrayref( ['2012-12-31', '%Y-%m-%d %H:%M:%S'] );
-    isa_ok( $f->time_from_arrayref, 'Time::Piece' );
-    is( $f->time_from_arrayref->datetime, '2012-12-31T00:00:00' );
-
     $f->time_from_arrayref( ['23:59:59', '%H:%M:%S'] );
     isa_ok( $f->time_from_arrayref, 'Time::Piece' );
-    is( $f->time_from_arrayref->datetime, '1970-01-01T23:59:59' );
+    my $epoch = localtime(0);
+    my $time = $epoch + (23 - $epoch->hour)*3600 + 59*60 + 59;
+    is( $f->time_from_arrayref->datetime, $time->datetime );
+
+    SKIP: {
+        skip "Time::Piece 1.20 not installed", 2 if $Time::Piece::VERSION lt '1.20';
+
+        $f->time_from_arrayref( ['2012-12-31', '%Y-%m-%d %H:%M:%S'] );
+        isa_ok( $f->time_from_arrayref, 'Time::Piece' );
+        is( $f->time_from_arrayref->datetime, '2012-12-31T00:00:00' );
+    }
 
     # ArrayRef with no args
     like( exception { $f->time_from_arrayref( [ ] ) }, qr/^Time is undefined/ );
