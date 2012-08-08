@@ -19,11 +19,11 @@ my $builder = Module::Build->new(
     },
     requires => {
         'perl' => 5.006,
-        'Time::Piece' => 0,
         'namespace::autoclean' => 0,
         'Moose' => 0,
         'MooseX::Types' => 0,
         'MooseX::Types::Moose' => 0,
+        'Time::Piece' => 0,
         'Try::Tiny' => 0,
     },
     create_makefile_pl => 'traditional',

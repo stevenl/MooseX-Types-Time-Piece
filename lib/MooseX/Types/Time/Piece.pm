@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 use Carp ();
 use Time::Piece ();
@@ -12,7 +12,7 @@ use Time::Seconds ();
 use Try::Tiny;
 
 use MooseX::Types -declare => [qw( Time Duration )];
-use MooseX::Types::Moose qw( ArrayRef Int Str );
+use MooseX::Types::Moose qw( ArrayRef Num Str );
 
 class_type 'Time::Piece';
 class_type 'Time::Seconds';
@@ -26,7 +26,7 @@ my $ISO_FORMAT = '%Y-%m-%dT%H:%M:%S';
 for my $type ( 'Time::Piece', Time )
 {
     coerce $type,
-        from Int, via
+        from Num, via
         {
             Time::Piece->new($_)
         },
@@ -57,7 +57,7 @@ for my $type ( 'Time::Piece', Time )
 for my $type ( 'Time::Seconds', Duration )
 {
     coerce $type,
-        from Int, via { Time::Seconds->new($_) };
+        from Num, via { Time::Seconds->new($_) };
 }
 
 1;
@@ -91,7 +91,7 @@ MooseX::Types::Time::Piece - Time::Piece type and coercions for Moose
 
     my $f = Foo->new;
     $f->time( Time::Piece->new )            # no coercion
-    $f->time( time() );                     # coerce from Int
+    $f->time( time() );                     # coerce from Num
     $f->time( '2012-12-31T23:59:59' );      # coerce from Str
     $f->time( ['2012-12-31', '%Y-%m-%d'] ); # coerce from ArrayRef
     $f->duration( Time::Seconds::ONE_DAY * 2 );
@@ -113,9 +113,9 @@ A class type for L<Time::Piece>.
 
 =over
 
-=item coerce from C<Int>
+=item coerce from C<Num>
 
-The integer is interpreted as the number of seconds since the system epoch
+The number is interpreted as the seconds since the system epoch
 as accepted by L<localtime()|perlfunc/localtime>.
 
 =item coerce from C<Str>
@@ -139,9 +139,9 @@ A class type for L<Time::Seconds>.
 
 =over
 
-=item coerce from C<Int>
+=item coerce from C<Num>
 
-The integer is interpreted as seconds in duration.
+The number is interpreted as seconds in duration.
 
 =back
 
