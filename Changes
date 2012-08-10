@@ -1,17 +1,10 @@
 Revision history for MooseX-Types-Time-Piece
 
-0.05    2012-07-30
-        Skip some tests for older versions of Time::Piece
+0.09    2012-08-10
+        Simplified tests with assumption that args are passed directly to Time::Piece
 
-0.04    2012-07-28
-        Added test dependency on Test::Warn
-
-0.03    2012-07-27
-        Added test dependency on Test::NoWarnings
-
-0.02    2012-07-25
-        Catch warnings caused by tests
+0.08    2012-08-08
+        Changed Int coercion to Num coercion
 
 0.01    2012-07-24
-        First version.
-
+        First version
