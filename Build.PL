@@ -9,20 +9,19 @@ my $builder = Module::Build->new(
     dist_author         => q{Steven Lee <stevenl@cpan.org>},
     dist_version_from   => 'lib/MooseX/Types/Time/Piece.pm',
     configure_requires  => {
-        'Module::Build' => 0,
+        'Module::Build' => 0.40,
     },
     build_requires => {
-        'Test::More' => 0,
-        'Test::Fatal' => 0,
-        'Test::NoWarnings' => 0,
+        'Test::More' => 0.68,
+        'Test::Fatal' => 0.001,
     },
     requires => {
         'perl' => 5.006,
-        'namespace::autoclean' => 0,
-        'MooseX::Types' => 0,
-        'MooseX::Types::Moose' => 0,
-        'Time::Piece' => 0,
-        'Try::Tiny' => 0,
+        'namespace::autoclean' => 0.01,
+        'MooseX::Types' => 0.01,
+        'MooseX::Types::Moose' => 0.01,
+        'Time::Piece' => 1.20,
+        'Try::Tiny' => 0.01,
     },
     create_makefile_pl => 'traditional',
     meta_merge => {
@@ -32,7 +31,7 @@ my $builder = Module::Build->new(
             repository => 'http://github.com/stevenl/moosex-types-time-piece',
         }
     },
-    add_to_cleanup      => [ 'MooseX-Types-Time-Piece-*' ],
+    add_to_cleanup => [ 'MooseX-Types-Time-Piece-*' ],
 );
 
 $builder->create_build_script();
