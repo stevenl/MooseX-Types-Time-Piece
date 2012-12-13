@@ -1,7 +1,9 @@
-##!perl -T
+#!perl -T
 
-use Test::More tests => 19;
-use Test::NoWarnings;
+use strict;
+use warnings;
+
+use Test::More tests => 18;
 use Test::Fatal;
 
 use Time::HiRes ();
